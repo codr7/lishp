@@ -12,13 +12,13 @@ arrivederci!
 ```
 
 ### intro
-```lishp``` aims to implement a text based shell that's programm(ed/able) in CL, while talking the bold step to carefully tweak CL's syntax in shell context to fit the purpose without burning any bridges. Or the extendability and power of Emacs applied to solving the text based shell problem; but starting from a sane, mature Lisp standard/implementation and offered under a less conditional license.
+```lishp``` aims to implement a text based shell that's programm(ed/able) in CL, while talking the bold step to carefully tweak CL's syntax in shell context to fit the purpose without burning any bridges. An attempt to apply the extendability and power of Emacs to solving the text based shell problem; but starting from a sane, mature Lisp standard/implementation and offered under a less conditional license. Back to the original Lisp machines in some ways; sans graphics for now, one step at a time.
 
-### vision
+#### vision
 What you see at this point is a tiny step in the direction where I'm aiming with this, I still don't feel like I'm even done tracing the idea to it's logical conclusions, this is very much an explorative adventure with no end in either mind nor sight.
 
-### virtual
-True to it's Lisp heritage and host; `lishp` implements a virtual world, a namespace clearly separated from the rest of your computer. It's not an isolated world, by any means; but separate. It doesn't support listing files in a regular directory out of the box, for example; not that it couldn't be extended by adding a command to do just that, it just tries to solve the more general problem in a more programmable style. Lisp images represent the world, directories are packages with a touch of syntax to represent hierarchies; functions represents executables, variables data etc.
+### virtual reality
+True to it's inner Lisp; `lishp` implements a virtual world, a namespace clearly separated from the rest of your computer and all it's pesky little details. It's not an isolated world, by any means; but it doesn't support listing files in its host environment out of the box, for example; not that it couldn't be trivially extended by the user to do that, it just tries to solve the more general problem in a more programmable style. Lisp images represent the world, directories are packages with a touch of syntax to represent hierarchies; functions represents executables, variables data etc.
 
 ### syntax
 
