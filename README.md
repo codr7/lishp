@@ -1,5 +1,5 @@
 ## lishp
-#### a Common Lispy text based shell
+#### a Common Lispy, text based shell
 
 ### intro
 ```lishp``` aims to implement a text based shell that's implemented and programmable in Common Lisp, while talking the bold step to carefully tweak Common Lisp's syntax to fit the purpose without burning any bridges. Or, more metaphorically; the extendability and power of Emacs applied to solving the text based shell problem but starting from a sane, mature Lisp standard/implementation; offered under a less conditional license.
@@ -36,4 +36,4 @@ baz>
 All functionality described in this document is intended to work reliably, but `lishp` is still very much a work in progress with huge gaps all over the place. The good news is that it is trivial to extend from Common Lisp; which hopefully will allow more experimentaion and a more constructive as well as spedient evolution than less programmable approaches to solving similar use cases, regular shells included.
 
 ### support
-Should you wish to support this effort and allow me to spend more of my time and energy on evolving `lishp`, feel free to [help]() make that economically feasible. Rest assured that any contributions are most appreciated, as I much prefer writing code entirely on my own terms (who doesn't?).
+Should you wish to support this effort and allow me to spend more of my time and energy on evolving `lishp`, feel free to [help](https://liberapay.com/andreas7/donate) make that economically feasible. Rest assured that any contributions are most appreciated, as I much prefer writing code entirely on my own terms (who doesn't?).
