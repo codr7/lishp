@@ -36,7 +36,6 @@ $4 ls
 Contents of >:
 foo>
 baz>
-$5 md foo>bar
 $6 cd foo>bar
 foo>bar>
 $7 cd >

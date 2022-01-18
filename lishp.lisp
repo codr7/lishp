@@ -2,9 +2,10 @@
   (:use cl)
   (:export *results* *version*
 	   eval-line
-	   get-path
+	   format-result
+	   get-path get-symbols
 	   ls
-	   package!
+	   package! print-result
 	   say start))
 
 (in-package lishp)
@@ -48,7 +49,7 @@
 
 (defun ls (&rest args)
   (declare (ignore args))
-  (format *out* "Contents of ~a~%" (get-path))
+  (format *out* "Contents of ~a:~%" (get-path))
   (get-symbols))
 
 (defun say (spec &rest args)

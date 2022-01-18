@@ -1,8 +1,6 @@
-* add md <dir>
-* add regexp support
-** add ls support
-** add cd support
-** add rm support
+* add md
+* add cd
+** create if not exists
 * add support for braces
 ** keep track of brace depth
 *** keep reading lines and accing forms while > 0
@@ -10,6 +8,10 @@
 * add asdf
 * add executable
 * hn
+* add regexp support
+** add ls support
+** add cd support
+** add rm support
 * add support for vectors
 ** [foo bar baz]
 * add support for hash tables
