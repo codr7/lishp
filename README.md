@@ -1,13 +1,16 @@
+# lishp
+## a Common Lispy text based shell
+
 ### intro
 ```lishp``` aims to implement a text based shell that's implemented and programmable in Common Lisp, while talking the bold step to carefully tweak Common Lisp's syntax to fit the purpose without burning any bridges. Or, more metaphorically; the extendability and power of Emacs applied to solving the text based shell problem but starting from a sane, mature Lisp standard/implementation; offered under a less conditional license.
 
 ### virtual
-True to it's Lisp heritage and host, `lishp` implements a virtual world, a separate namespace from the rest of your computer. It's not an isolated world, by any means; but still separate. It doesn't support listing files in a regular directory out of the box, for example; not that it couldn't be extended by adding a command to do just that, it just tries to solve the more general problem in a more programmable style. The Lisp image represents the world, directories are packages with a tiny bit of added syntax to represent hierarchies; functions represents executables, variables data etc.
+True to it's Lisp heritage and host; `lishp` implements a virtual world, a namespace clearly separated from the rest of your computer. It's not an isolated world, by any means; but separate. It doesn't support listing files in a regular directory out of the box, for example; not that it couldn't be extended by adding a command to do just that, it just tries to solve the more general problem in a more programmable style. Lisp images represent the world, directories are packages with a touch of syntax to represent hierarchies; functions represents executables, variables data etc.
 
 ### syntax
 
 #### directories
-Directories are represented by packages, angled brackets are used to indicate hirerchies.
+Directories are represented by packages, angled brackets are used to indicate hirerchy.
 
 ```
 $1 ls
