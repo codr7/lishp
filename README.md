@@ -7,11 +7,12 @@ may the source be with you!
 
 $0 say "hello"
 hello
-$1
+$1 q
+arrivederci!
 ```
 
 ### intro
-```lishp``` aims to implement a text based shell that's implemented and programmable in CL, while talking the bold step to carefully tweak CL's syntax in shell context to fit the purpose without burning any bridges. Or the extendability and power of Emacs applied to solving the text based shell problem; but starting from a sane, mature Lisp standard/implementation and offered under a less conditional license.
+```lishp``` aims to implement a text based shell that's programm(ed/able) in CL, while talking the bold step to carefully tweak CL's syntax in shell context to fit the purpose without burning any bridges. Or the extendability and power of Emacs applied to solving the text based shell problem; but starting from a sane, mature Lisp standard/implementation and offered under a less conditional license.
 
 ### vision
 What you see at this point is a tiny step in the direction where I'm aiming with this, I still don't feel like I'm even done tracing the idea to it's logical conclusions, this is very much an explorative adventure with no end in either mind nor sight.
@@ -25,10 +26,14 @@ True to it's Lisp heritage and host; `lishp` implements a virtual world, a names
 Directories are represented by CL packages, angled brackets are used to indicate hirerchy.
 
 ```
+$
+>
 $1 ls
+Contents of >:
 $2 md foo
 $3 md baz
 $4 ls
+Contents of >:
 foo>
 baz>
 $5 md foo>bar
@@ -40,6 +45,8 @@ $8 cd foo
 foo>
 $9 rm bar
 $10 ls
+Contents of >:
+baz>
 $11 cd <baz
 baz>
 ```

@@ -1,9 +1,8 @@
-** define $N in current package
 * add md <dir>
-** define package
-*** add > to current
-*** skip cl-user
-* add ls <regexp>
-** add regexp lib
-* add cd <regexp>
-* add rm <regexp>
+* add regexp support
+** add ls support
+** add cd support
+** add rm support
+* add support for braces
+** keep track of brace depth
+*** keep reading lines and accing forms while > 0
