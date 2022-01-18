@@ -6,3 +6,12 @@
 * add support for braces
 ** keep track of brace depth
 *** keep reading lines and accing forms while > 0
+** eval each line and keep return value of last
+* add asdf
+* add executable
+* hn
+* add support for vectors
+** [foo bar baz]
+* add support for hash tables
+** special case vectors of pairs
+** [(foo . bar) (baz . 42)]
