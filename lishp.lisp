@@ -11,16 +11,19 @@
 (defvar *out*)
 
 (defmethod eval-line (in)
-  (let* ((fn (pop in))
-	 (out (apply fn in)))
-    (vector-push-extend out *results*)))
+  (let ((fn (pop in)))
+    (when fn
+      (let ((out (apply fn in)))
+	(vector-push-extend out *results*)))))
 
 (defun say (spec &rest args)
   (apply #'format *out* spec args)
   (terpri *out*))
 
-(defun start (&key (in *standard-input*) (out *standard-output*))
-  (let ((*out* out))
+(defun start (&key (in *standard-input*) (out *standard-output*) (package 'lishp))
+  (let ((*out* out)
+	(*package* (find-package package)))
+    (use-package 'lishp)
     (format out "lishp v~a~%may the source be with you~%~%" *version*)
     (labels ((rec-line ()
 	       (format out "$~a " (first (array-dimensions *results*)))

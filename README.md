@@ -5,8 +5,8 @@
 lishp v1
 may the source be with you
 
-$0 say "hello lishp!"
-hello lishp!
+$0 say "hello"
+hello
 $1
 ```
 

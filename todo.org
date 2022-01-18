@@ -1,10 +1,8 @@
-* add repl
-** read lines
-*** read forms
-* call first form as fn with rest as non-evaluated args
-** add *results* vector
-*** push lists of forms
-** define $N in cl-user for each call
+** define $N in current package
+* add md <dir>
+** define package
+*** add > to current
+*** skip cl-user
 * add ls <regexp>
 ** add regexp lib
 * add cd <regexp>
