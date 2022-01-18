@@ -2,8 +2,8 @@
 #### a Common Lispy, text based shell
 
 ```
-lishp v1
-may the source be with you
+lishp v1,
+may the source be with you!
 
 $0 say "hello"
 hello
@@ -28,19 +28,19 @@ Directories are represented by CL packages, angled brackets are used to indicate
 $1 ls
 $2 md foo
 $3 md baz
-$3 ls
+$4 ls
 foo>
 baz>
-$6 md foo>bar
-$7 cd foo>bar
+$5 md foo>bar
+$6 cd foo>bar
 foo>bar>
 $7 cd >
 >
 $8 cd foo
 foo>
-$10 rm bar
-$11 ls
-$10 cd <baz
+$9 rm bar
+$10 ls
+$11 cd <baz
 baz>
 ```
 
