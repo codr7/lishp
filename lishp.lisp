@@ -15,7 +15,7 @@
 (define-symbol-macro *version* 1)
 
 (defparameter *results* (make-array 0 :fill-pointer 0))
-(defparameter *path* nil)
+(defparameter *path* (list 'lishp))
 (defvar *out*)
 
 (defmethod eval-line (in)
@@ -64,9 +64,12 @@
 (defun ls (&rest args)
   (declare (ignore args))
   (format *out* "Contents of ~a:~%" (get-path))
-  (stable-sort (get-symbols)
-	       (lambda (x y)
-		 (string< (symbol-name x) (symbol-name y)))))
+  (mapcar (lambda (s)
+	    (let ((v (symbol-value s)))
+	      (if (typep v 'package) s v)))
+	  (stable-sort (get-symbols)
+		       (lambda (x y)
+			 (string< (symbol-name x) (symbol-name y))))))
 
 (defun say (spec &rest args)
   (apply #'format *out* spec args)
@@ -84,12 +87,17 @@
   nil)
   
 (defun cd (dir &optional (create nil))
+  (when (char= (char (symbol-name dir) 0) #\>)
+    (setf *path* (list 'lishp))
+    (setf dir (intern (subseq (symbol-name dir) 1))))
+  
   (when create
     (md dir))
 
   (cond
     ((string= dir "<")
-     (pop *path*))
+     (when (rest *path*)
+       (pop *path*)))
     (t
      (let* ((*path* (cons dir *path*))
 	   (p (get-path)))
@@ -105,6 +113,8 @@
 	(*package* (find-package package)))
     (unless (eq *package* (find-package 'lishp))
       (use-package 'lishp))
+    (unless (find-package "lishp>")
+      (setf (symbol-value 'lishp>) (make-package "lishp>")))
     (format out "lishp v~a,~%may the source be with you!~%~%" *version*)
     (labels ((rec-line ()
 	       (format out "$~a " (length *results*))
