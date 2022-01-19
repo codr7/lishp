@@ -14,8 +14,10 @@
 
 (define-symbol-macro *version* 1)
 
+(defparameter *debug* nil)
 (defparameter *results* (make-array 0 :fill-pointer 0))
 (defparameter *path* nil)
+
 (defvar *out*)
 
 (defmacro dohash ((k v tbl) &body body)
@@ -32,7 +34,7 @@
 		(go ,$next))))))))
 
 (defstruct dir
-  (name (error "Missing name"))
+  (name (error "uissing name"))
   (entries (make-hash-table)))
 
 (defparameter *root-dir* (make-dir :name ">"))
@@ -116,7 +118,7 @@
     (t
      (let* ((entries (dir-entries (first *dir*))))
        (unless (gethash dir entries)
-	 (error "Unknown directory: ~a" dir))
+	 (error "not found: ~a" (string-downcase (symbol-name dir))))
        (push (gethash dir entries) *dir*))
      (push dir *path*)))
   
@@ -142,7 +144,12 @@
 				   (if form
 				       (rec-form (cons form out))
 				       (nreverse out)))))
-			(print-result (eval-line (rec-form nil))))
+			(handler-case
+			    (print-result (eval-line (rec-form nil)))
+			  (error (e)
+			    (when *debug*
+			      (error e))
+			    (format t "~a~%" e))))
 		      (rec-line)))))))
       (rec-line))))
 
