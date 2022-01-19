@@ -107,8 +107,9 @@
 
 (defun md (&rest dirs)
   (dolist (d dirs)
-    (unless (gethash d (dir-entries (first *dir*)))
-      (setf (gethash d (dir-entries (first *dir*))) (make-dir :name (string-downcase (symbol-name d))))))
+    (when (gethash d (dir-entries (first *dir*)))
+      (error "duplicate entry: ~a" (string-downcase (symbol-name d))))
+    (setf (gethash d (dir-entries (first *dir*))) (make-dir :name (string-downcase (symbol-name d)))))
   nil)
 
 (defun cd (dir &optional (create nil))
