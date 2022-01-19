@@ -4,7 +4,7 @@
 	   cd
 	   eval-line
 	   format-result
-	   get-path get-symbols
+	   get-dir-keys get-path
 	   ls
 	   md
 	   print-result
@@ -15,8 +15,34 @@
 (define-symbol-macro *version* 1)
 
 (defparameter *results* (make-array 0 :fill-pointer 0))
-(defparameter *path* (list 'lishp))
+(defparameter *path* nil)
 (defvar *out*)
+
+(defmacro dohash ((k v tbl) &body body)
+  (let (($i (gensym)) ($k (gensym)) ($next (gensym)) ($ok (gensym)))
+    `(with-hash-table-iterator (,$i ,tbl)
+       (tagbody
+	  ,$next
+	  (multiple-value-bind (,$ok ,$k ,v) (,$i)
+	    (declare (ignorable ,v))
+	    (when ,$ok
+	      (let ((,k ,$k))
+		(declare (ignorable ,k))
+		,@body
+		(go ,$next))))))))
+
+(defstruct dir
+  (name (error "Missing name"))
+  (entries (make-hash-table)))
+
+(defparameter *root-dir* (make-dir :name ">"))
+(defparameter *dir* (list *root-dir*))
+
+(defun get-dir-keys (&key dir)
+  (let (out)
+    (dohash (k v (dir-entries (or dir (first *dir*))))
+      (push k out))
+    (nreverse out)))
 
 (defmethod eval-line (in)
   (let* ((fn (pop in)))
@@ -29,8 +55,8 @@
   (with-output-to-string (out)
     (princ in out)))
 
-(defmethod format-result ((in package))
-  (package-name in))
+(defmethod format-result ((in dir))
+  (format nil "~a> (~a)" (dir-name in) (hash-table-count (dir-entries in))))
 
 (defmethod format-result ((in symbol))
   (string-downcase (symbol-name in)))
@@ -51,23 +77,12 @@
 	  (format out "~a>" (string-downcase (symbol-name p)))))
       ">"))
 
-(defun directory-package (&key (name (get-path)))
-  (or (find-package name)
-      (error "Directory not found: ~a" name)))
-
-(defun get-symbols ()
-  (let* (out)
-    (do-symbols (s (directory-package))
-      (push s out))
-    (nreverse out)))
-
 (defun ls (&rest args)
   (declare (ignore args))
   (format *out* "Contents of ~a:~%" (get-path))
-  (mapcar (lambda (s)
-	    (let ((v (symbol-value s)))
-	      (if (typep v 'package) s v)))
-	  (stable-sort (get-symbols)
+  (mapcar (lambda (k)
+	    (gethash k (dir-entries (first *dir*))))
+	  (stable-sort (get-dir-keys)
 		       (lambda (x y)
 			 (string< (symbol-name x) (symbol-name y))))))
 
@@ -77,44 +92,38 @@
 
 (defun md (&rest dirs)
   (dolist (d dirs)
-    (let* ((*path* (cons d *path*))
-	   (p (get-path)))
-      (unless (find-package p)
-	(let* ((*path* (rest *path*))
-	       (*package* (directory-package))
-	       (d (format nil "~a>" d)))
-	  (setf (symbol-value (intern d)) (make-package p))))))
+    (unless (gethash d (dir-entries (first *dir*)))
+      (setf (gethash d (dir-entries (first *dir*))) (make-dir :name (string-downcase (symbol-name d))))))
   nil)
-  
+
 (defun cd (dir &optional (create nil))
-  (when (char= (char (symbol-name dir) 0) #\>)
-    (setf *path* (list 'lishp))
-    (setf dir (intern (subseq (symbol-name dir) 1))))
+  (let ((dp (symbol-name dir)))
+    (when (char= (char dp 0) #\>)
+      (setf *path* nil)
+      (setf *dir* (list *root-dir*))
+      (setf dp (subseq dp 1)))
+    (when (zerop (length dp))
+      (return-from cd ">"))
+    (setf dir (intern dp)))
   
   (when create
     (md dir))
 
   (cond
     ((string= dir "<")
-     (when (rest *path*)
-       (pop *path*)))
+     (pop *dir*)
+     (pop *path*))
     (t
-     (let* ((*path* (cons dir *path*))
-	   (p (get-path)))
-       (unless (find-package p)
-	 (error "Unknown directory: ~a" p)))
-     
+     (let* ((entries (dir-entries (first *dir*))))
+       (unless (gethash dir entries)
+	 (error "Unknown directory: ~a" dir))
+       (push (gethash dir entries) *dir*))
      (push dir *path*)))
-    
+  
   (get-path))
 
-(defun start (&key (in *standard-input*) (out *standard-output*) (package 'lishp))
-  (let* ((*out* out)
-	(*package* (find-package package)))
-    (unless (eq *package* (find-package 'lishp))
-      (use-package 'lishp))
-    (unless (find-package "lishp>")
-      (setf (symbol-value 'lishp>) (make-package "lishp>")))
+(defun start (&key (in *standard-input*) (out *standard-output*))
+  (let* ((*out* out))
     (format out "lishp v~a,~%may the source be with you!~%~%" *version*)
     (labels ((rec-line ()
 	       (format out "$~a " (length *results*))

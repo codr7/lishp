@@ -1,3 +1,4 @@
+* handle/print errors in repl loop
 * add rm
 * add asdf
 * add executable

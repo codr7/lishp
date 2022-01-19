@@ -18,31 +18,30 @@ arrivederci!
 What you see at this point is a tiny step in the direction where I'm aiming with this, I still don't feel like I'm even done tracing the idea to it's logical conclusions, this is very much an explorative adventure with no end in neither mind nor sight.
 
 ### virtual reality
-True to it's inner Lisp; `lishp` implements a virtual world, a namespace clearly separated from the rest of your computer and all it's pesky little details. It's not an isolated world, by any means; but it doesn't support listing files in its host environment out of the box, for example; not that it couldn't be trivially extended by the user to do that, it just tries to solve the more general problem in a more programmable style. Lisp images represent the world, directories are packages with a touch of syntax to represent hierarchies; functions represents executables, variables data etc.
+True to it's inner Lisp; `lishp` implements a virtual world, a namespace clearly separated from the rest of your computer and all it's pesky little details. It's not an isolated world, by any means; but it doesn't support listing files in its host environment out of the box, for example; not that it couldn't be trivially extended by the user to do that, it just tries to solve the more general problem in a more programmable style.
 
 ### syntax
 
 #### directories
-Directories are represented by CL packages, angled brackets are used to indicate hirerchy.
 
 ```
 $0
->
+lishp>
 $1 ls
-Contents of >:
+Contents of lishp>:
 $2 md foo>bar baz
 $3 ls
-Contents of >:
-foo>
-baz>
+Contents of lishp>:
+foo> (1)
+baz> (0)
 $4 cd foo
-foo>
+lishp>foo>
 $5 ls
-Contents of foo>:
-bar>
+Contents of lishp>foo>:
+bar> (0)
 $6 rm bar
 $7 cd <
->
+lishp>
 ```
 
 ### status
