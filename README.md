@@ -25,26 +25,29 @@ True to it's inner Lisp; `lishp` implements a virtual world, a namespace clearly
 
 ### directories
 Directories work more or less as you would expect; but using `>` as separator, and it's opposite instead of `..`.
+The actual directory lives independently from its path in a specific context, it's basically a name and a hash table.
 
 ```
-$0
->
-$1 ls
+$0 ls
 Contents of >:
-$2 md foo>bar baz
-$3 ls
+$1 md foo bar
+$2 ls
 Contents of >:
-foo> (1)
-baz> (0)
-$4 cd foo
-foo>
-$5 ls
-Contents of foo>:
 bar> (0)
-$6 rm bar
-$7 cd <
+foo> (0)
+$3 cd bar
+bar>
+$4 md baz
+$5 cd <
 >
+$6 ls
+Contents of >:
+bar> (1)
+foo> (0)
 ```
+
+### commands
+The commands used in the previous example above are all regular functions defined in the `lishp`-package, lookup scans the path all the way out to root and looks for functions in `lishp` as a last resort. This makes it possible to override anything at any level.
 
 ### support
 Should you wish to support this effort and allow me to spend more of my time and energy on evolving `lishp`, feel free to [help](https://liberapay.com/andreas7/donate) make that economically feasible. Rest assured that any contributions are most appreciated, as I much prefer writing code that means something to me on my own terms (who doesn't?).
