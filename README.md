@@ -26,28 +26,23 @@ True to it's inner Lisp; `lishp` implements a virtual world, a namespace clearly
 Directories are represented by CL packages, angled brackets are used to indicate hirerchy.
 
 ```
-$
+$0
 >
 $1 ls
 Contents of >:
-$2 md foo
-$3 md baz
-$4 ls
+$2 md foo>bar baz
+$3 ls
 Contents of >:
 foo>
 baz>
-$6 cd foo>bar
-foo>bar>
-$7 cd >
+$4 cd foo
+foo>
+$5 ls
+Contents of foo>:
+bar>
+$6 rm bar
+$7 cd <
 >
-$8 cd foo
-foo>
-$9 rm bar
-$10 ls
-Contents of >:
-baz>
-$11 cd <baz
-baz>
 ```
 
 ### status

@@ -1,17 +1,23 @@
-* add md
-* add cd
-** create if not exists
+* add rm
+* add asdf
+* add executable
+** save-lisp-and-die on q
+* hn
 * add support for braces
 ** keep track of brace depth
 *** keep reading lines and accing forms while > 0
 ** eval each line and keep return value of last
-* add asdf
-* add executable
-* hn
 * add regexp support
 ** add ls support
 ** add cd support
 ** add rm support
+* add << support
+** pop n paths
+* add >> support
+** pipe command input/output
+** catch all returned values & apply
+* add slurp fn to read lisp/lsh code into current package
+** assume lishp syntax unless .lisp extension
 * add support for vectors
 ** [foo bar baz]
 * add support for hash tables
