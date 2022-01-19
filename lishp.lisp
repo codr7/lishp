@@ -34,7 +34,7 @@
 		(go ,$next))))))))
 
 (defstruct dir
-  (name (error "uissing name"))
+  (name (error "missing name"))
   (entries (make-hash-table)))
 
 (defparameter *root-dir* (make-dir :name ">"))
@@ -94,7 +94,7 @@
 
 (defun ls (&rest args)
   (declare (ignore args))
-  (format *out* "Contents of ~a:~%" (get-path))
+  (format *out* "contents of ~a:~%" (get-path))
   (mapcar (lambda (k)
 	    (gethash k (dir-entries (first *dir*))))
 	  (stable-sort (get-dir-keys)

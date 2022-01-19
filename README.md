@@ -29,10 +29,10 @@ The actual directory lives independently from its path in a specific context, it
 
 ```
 $0 ls
-Contents of >:
+ontents of >:
 $1 md foo bar
 $2 ls
-Contents of >:
+contents of >:
 bar> (0)
 foo> (0)
 $3 cd bar
@@ -41,7 +41,7 @@ $4 md baz
 $5 cd <
 >
 $6 ls
-Contents of >:
+contents of >:
 bar> (1)
 foo> (0)
 ```
