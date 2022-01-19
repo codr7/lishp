@@ -1,4 +1,3 @@
-* lookup commands recursively in *dir* entries before defaulting to symbol-value in the lishp package
 * add rm
 * add asdf
 * add executable

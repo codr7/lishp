@@ -23,25 +23,26 @@ True to it's inner Lisp; `lishp` implements a virtual world, a namespace clearly
 ### syntax
 
 #### directories
+Directories work more or less as you would expect, but using `>` as separator, and it's opposite instead of `..`.
 
 ```
 $0
-lishp>
+>
 $1 ls
-Contents of lishp>:
+Contents of >:
 $2 md foo>bar baz
 $3 ls
-Contents of lishp>:
+Contents of >:
 foo> (1)
 baz> (0)
 $4 cd foo
-lishp>foo>
+foo>
 $5 ls
-Contents of lishp>foo>:
+Contents of foo>:
 bar> (0)
 $6 rm bar
 $7 cd <
-lishp>
+>
 ```
 
 ### status

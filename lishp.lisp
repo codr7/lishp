@@ -46,10 +46,30 @@
       (push k out))
     (nreverse out)))
 
+(defun find-entry (key)
+  (dolist (d *dir*)
+    (let ((v (gethash key (dir-entries d))))
+      (when v
+	(return-from find-entry v))))
+  
+  (when (fboundp key)
+    (fdefinition key)))
+
+(defun get-path ()
+  (if *path*
+      (with-output-to-string (out)
+	(dolist (p (reverse *path*))
+	  (format out "~a>" (string-downcase (symbol-name p)))))
+      ">"))
+
+(defun get-entry (key)
+  (or (find-entry key)
+      (error "not found: ~a~a" (get-path) (string-downcase (symbol-name key)))))
+
 (defmethod eval-line (in)
   (let* ((fn (pop in)))
     (when fn
-      (let* ((out (apply fn in)))
+      (let* ((out (apply (get-entry fn) in)))
 	(vector-push-extend out *results*)
 	out))))
 
@@ -71,13 +91,6 @@
 (defmethod print-result ((in list))
   (dolist (r in)
     (print-result r)))
-
-(defun get-path ()
-  (if *path*
-      (with-output-to-string (out)
-	(dolist (p (reverse *path*))
-	  (format out "~a>" (string-downcase (symbol-name p)))))
-      ">"))
 
 (defun ls (&rest args)
   (declare (ignore args))
