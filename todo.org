@@ -1,5 +1,3 @@
-* add cp/cp-entry
-** error if not found
 * add cmd struct
 ** target
 ** args

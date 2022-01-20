@@ -52,7 +52,7 @@ say()
 42
 ```
 
-Bindings may be moved using `mv`.
+Bindings may be moved using `mv`,
 
 ```
 0 set x 42
@@ -62,6 +62,19 @@ Bindings may be moved using `mv`.
 42
 3 get x
 not found: >x
+```
+
+and copied using `cp`.
+
+```
+0 set x 42
+1 cp x y
+2 get y
+>y:
+42
+3 get x
+>x:
+42
 ```
 
 ### directories

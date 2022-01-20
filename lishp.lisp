@@ -3,7 +3,7 @@
   (:import-from sb-ext *posix-argv* save-lisp-and-die)
   
   (:export *debug* *dir* *dirs* *path* *paths* *results* *root* *version*
-	   cd
+	   cd cp cp-entry
 	   eval-entry eval-line
 	   find-entry format-result
 	   _get get-dir-keys get-entry get-path
@@ -148,6 +148,29 @@
     (setf (gethash dst *dir*) v))
   nil)
 
+(defmethod cp-entry (val)
+  val)
+
+(defmethod cp-entry ((val hash-table))
+  (make-hash-table 
+   :test (hash-table-test val)
+   :rehash-size (hash-table-rehash-size val)
+   :rehash-threshold (hash-table-rehash-threshold val)
+   :size (hash-table-size val)))
+
+(defmethod cp-entry ((val list))
+  (copy-list val))
+
+(defmethod cp-entry ((val string))
+  (copy-seq val))
+
+(defun cp (src dst)
+  (let ((v (gethash src *dir*)))
+    (unless v
+      (error "not found: ~a" src))
+    (setf (gethash dst *dir*) (cp-entry v)))
+  nil)
+
 (defmethod format-entry (key (val function))    
   (format nil "~a()" (str! key)))
 
@@ -209,6 +232,7 @@
 (defmethod initialize-instance :after ((self shell) &key)
   (with-slots (root dirs) self
     (bind root 'cd #'cd)
+    (bind root 'cp #'cp)
     (bind root 'get #'_get)
     (bind root 'ls #'ls)
     (bind root 'md #'md)
