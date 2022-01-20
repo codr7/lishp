@@ -34,6 +34,24 @@ What you see is a tiny step in the direction where I'm aiming, this is very much
 ### virtual reality
 True to it's inner Lisp; `lishp` implements a virtual world, contained in the executable image; a namespace clearly separated from the rest of your computer and all it's pesky little details. It's not an isolated world, by any means; but it doesn't support listing files in its host environment out of the box, for example; not that it couldn't be trivially extended by the user to do that, it just tries to solve the more general problem in a more programmable style.
 
+### bindings
+`get` returns the value of the first binding found for the specified key starting from the current directory and recursing out to root.
+
+```
+$0 get say
+>say:
+say()
+```
+
+`set` may be used to set/override the value of a binding in the current directory.
+
+```
+$0 set x 42
+$1 get x
+>x:
+42
+```
+
 ### directories
 Directories work more or less as you would expect; but using `>` as separator, and it's opposite instead of `..`.
 The actual directory lives independently from its path in a specific context, it's basically a name and a hash table.
@@ -55,15 +73,6 @@ $6 ls
 contents of >:
 bar> (1)
 foo> (0)
-```
-
-### commands
-The commands used in the previous example above are all functions bound in the root directory. Lookup scans the path all the way out to root from the current directory, this enables overriding anything at any level.
-
-```
-$0 get ls
->:
-ls()
 ```
 
 ### support

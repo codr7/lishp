@@ -1,10 +1,3 @@
-* add set cmds
-** set foo 42
-** bind in root
-** use prev result if val missing
-** add bindings to readme
-* make get key optional
-** get last result if nil
 * add cmd struct
 ** name
 ** fn

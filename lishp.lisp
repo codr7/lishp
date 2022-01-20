@@ -11,7 +11,7 @@
 	   main md
 	   print-result
 	   rm rm-entry
-	   shell say start))
+	   _set shell say start))
 
 (in-package lishp)
 
@@ -24,6 +24,7 @@
 (define-symbol-macro *dirs* (slot-value *shell* 'dirs))
 (define-symbol-macro *dir* (first *dirs*))
 (define-symbol-macro *results* (slot-value *shell* 'results))
+(define-symbol-macro *result* (aref *results* (1- (length *results*))))
 
 (defvar *out*)
 
@@ -44,9 +45,8 @@
   (name (error "missing name"))
   (entries (make-hash-table)))
 
-(defstruct fn
-  (name (error "missing name"))
-  (body (error "missing body")))
+(defun dir-count (&optional (dir *dir*))
+  (hash-table-count (dir-entries dir)))
 
 (defun get-dir-keys (&key dir)
   (let* (out)
@@ -82,13 +82,20 @@
       (error "not found: ~a~a" (get-path) (str! key)))
     (values v p)))
 
-(defun _get (key)
-  (multiple-value-bind (v p) (get-entry key)
-    (format *out* "~a:~%" (format-path p))
+(defmethod format-entry (key val)
+  key)
+
+(defun _get (&optional key)
+  (multiple-value-bind (v p) (get-entry (or key *result*))
+    (format *out* "~a~a:~%" (format-path p) (str! key))
     v))
-    
-(defmethod eval-entry ((val fn) args)
-  (apply (fn-body val) args))
+
+(defun _set (key &optional val)
+  (setf (gethash key (dir-entries *dir*)) (or val *result*))
+  nil)
+
+(defmethod eval-entry ((val function) args)
+  (apply val args))
 
 (defmethod eval-line (in)
   (let* ((fn (pop in)))
@@ -101,12 +108,6 @@
   (with-output-to-string (out)
     (princ in out)))
 
-(defmethod format-result ((in dir))
-  (format nil "~a> (~a)" (dir-name in) (hash-table-count (dir-entries in))))
-
-(defmethod format-result ((in fn))
-  (format nil "~a()" (str! (fn-name in))))
-  
 (defmethod format-result ((in symbol))
   (str! in))
 
@@ -131,11 +132,17 @@
   (dolist (p paths)
     (rm-entry p)))
 
+(defmethod format-entry (key (val function))
+  (format nil "~a()" (str! key)))
+
+(defmethod format-entry (key (val dir))
+  (format nil "~a> (~a)" (str! key) (dir-count val)))
+
 (defun ls (&rest args)
   (declare (ignore args))
   (format *out* "contents of ~a:~%" (format-path))
   (mapcar (lambda (k)
-	    (gethash k (dir-entries *dir*)))
+	    (format-entry k (gethash k (dir-entries *dir*))))
 	  (stable-sort (get-dir-keys)
 		       (lambda (x y)
 			 (string< (symbol-name x) (symbol-name y))))))
@@ -180,16 +187,18 @@
    (dirs :initform nil :reader dirs)
    (results :initform (make-array 0 :fill-pointer 0) :reader results)))
 
-(defun bind-fn (dir key body)
-  (setf (gethash key (dir-entries dir)) (make-fn :name key :body body)))
+(defun bind (dir key val)
+  (setf (gethash key (dir-entries dir)) val))
 
 (defmethod initialize-instance :after ((self shell) &key)
   (with-slots (root dirs) self
-    (bind-fn root 'cd #'cd)
-    (bind-fn root 'get #'_get)
-    (bind-fn root 'ls #'ls)
-    (bind-fn root 'md #'md)
-    (bind-fn root 'rm #'rm)
+    (bind root 'cd #'cd)
+    (bind root 'get #'_get)
+    (bind root 'ls #'ls)
+    (bind root 'md #'md)
+    (bind root 'rm #'rm)
+    (bind root 'say #'say)
+    (bind root 'set #'_set)
     (push root dirs)))
 
 (defparameter *shell* (make-instance 'shell))
