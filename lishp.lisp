@@ -6,7 +6,7 @@
 	   cd
 	   eval-entry eval-line
 	   find-entry format-result
-	   get-dir-keys get-entry get-path
+	   _get get-dir-keys get-entry get-path
 	   ls
 	   main md
 	   print-result
@@ -61,22 +61,32 @@
   (string-downcase (symbol-name val)))
 
 (defun find-entry (key &key (dirs *dirs*))
-  (dolist (d dirs)
-    (let* ((v (gethash key (dir-entries d))))
-      (when v
-	(return-from find-entry v)))))
+  (let ((p *paths*))
+    (dolist (d dirs)
+      (let* ((v (gethash key (dir-entries d))))
+	(when v
+	  (return-from find-entry (values v p))))
+      (pop p))
+    (values nil p)))
 
-(defun get-path ()
-  (if *paths*
+(defun format-path (&optional (path *paths*))
+  (if path
       (with-output-to-string (out)
-	(dolist (p (reverse *paths*))
+	(dolist (p (reverse path))
 	  (format out "~a>" (str! p))))
       ">"))
 
 (defun get-entry (key &key (dirs *dirs*))
-  (or (find-entry key :dirs dirs)
-      (error "not found: ~a~a" (get-path) (str! key))))
+  (multiple-value-bind (v p) (find-entry key :dirs dirs)
+    (unless v
+      (error "not found: ~a~a" (get-path) (str! key)))
+    (values v p)))
 
+(defun _get (key)
+  (multiple-value-bind (v p) (get-entry key)
+    (format *out* "~a:~%" (format-path p))
+    v))
+    
 (defmethod eval-entry ((val fn) args)
   (apply (fn-body val) args))
 
@@ -123,7 +133,7 @@
 
 (defun ls (&rest args)
   (declare (ignore args))
-  (format *out* "contents of ~a:~%" (get-path))
+  (format *out* "contents of ~a:~%" (format-path))
   (mapcar (lambda (k)
 	    (gethash k (dir-entries *dir*)))
 	  (stable-sort (get-dir-keys)
@@ -161,7 +171,7 @@
        (push (gethash dir entries) *dirs*))
      (push dir *paths*)))
   
-  (get-path))
+  (format-path))
 
 (defclass shell ()
   ((debug? :initform nil :reader debug?)
@@ -176,6 +186,7 @@
 (defmethod initialize-instance :after ((self shell) &key)
   (with-slots (root dirs) self
     (bind-fn root 'cd #'cd)
+    (bind-fn root 'get #'_get)
     (bind-fn root 'ls #'ls)
     (bind-fn root 'md #'md)
     (bind-fn root 'rm #'rm)
@@ -192,7 +203,7 @@
 	       (let* ((line (read-line in nil)))
 		 (cond
 		   ((string= line "")
-		    (format out "~a~%" (get-path))
+		    (format out "~a~%" (format-path))
 		    (rec-line))
 		   ((string= line "q")
 		    (return-from start))
