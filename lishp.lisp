@@ -41,16 +41,12 @@
 		,@body
 		(go ,$next))))))))
 
-(defstruct dir
-  (name (error "missing name"))
-  (entries (make-hash-table)))
-
-(defun dir-count (&optional (dir *dir*))
-  (hash-table-count (dir-entries dir)))
+(defun make-dir ()
+  (make-hash-table))
 
 (defun get-dir-keys (&key dir)
   (let* (out)
-    (dohash (k v (dir-entries (or dir *dir*)))
+    (dohash (k v (or dir *dir*))
       (push k out))
     (nreverse out)))
 
@@ -63,7 +59,7 @@
 (defun find-entry (key &key (dirs *dirs*))
   (let ((p *paths*))
     (dolist (d dirs)
-      (let* ((v (gethash key (dir-entries d))))
+      (let* ((v (gethash key d)))
 	(when v
 	  (return-from find-entry (values v p))))
       (pop p))
@@ -76,10 +72,10 @@
 	  (format out "~a>" (str! p))))
       ">"))
 
-(defun get-entry (key &key (dirs *dirs*))
+(defun get-entry (key &key (dirs *dirs*) (paths *paths*))
   (multiple-value-bind (v p) (find-entry key :dirs dirs)
     (unless v
-      (error "not found: ~a~a" (get-path) (str! key)))
+      (error "not found: ~a~a" (format-path paths) (str! key)))
     (values v p)))
 
 (defmethod format-entry (key val)
@@ -97,7 +93,7 @@
     v))
 
 (defun _set (key &optional val)
-  (setf (gethash key (dir-entries *dir*)) (or val (pop-stack)))
+  (setf (gethash key *dir*) (or val (pop-stack)))
   nil)
 
 (defmethod eval-entry ((val function) args)
@@ -132,7 +128,7 @@
   (terpri *out*))
 
 (defun rm-entry (key)
-  (unless (remhash key (dir-entries *dir*))
+  (unless (remhash key *dir*)
     (error "not found: ~a" key)))
 
 (defun rm (&rest paths)
@@ -142,23 +138,23 @@
 (defmethod format-entry (key (val function))
   (format nil "~a()" (str! key)))
 
-(defmethod format-entry (key (val dir))
+(defmethod format-entry (key (val hash-table))
   (format nil "~a> (~a)" (str! key) (dir-count val)))
 
 (defun ls (&rest args)
   (declare (ignore args))
   (format *out* "contents of ~a:~%" (format-path))
   (mapcar (lambda (k)
-	    (format-entry k (gethash k (dir-entries *dir*))))
+	    (format-entry k (gethash k *dir*)))
 	  (stable-sort (get-dir-keys)
 		       (lambda (x y)
 			 (string< (symbol-name x) (symbol-name y))))))
 
 (defun md (&rest dirs)
   (dolist (d dirs)
-    (when (gethash d (dir-entries *dir*))
+    (when (gethash d *dir*)
       (error "duplicate entry: ~a" (str! d)))
-    (setf (gethash d (dir-entries *dir*)) (make-dir :name (str! d))))
+    (setf (gethash d *dir*) (make-dir)))
   nil)
 
 (defun cd (dir &optional (create nil))
@@ -179,10 +175,9 @@
      (pop *dirs*)
      (pop *paths*))
     (t
-     (let* ((entries (dir-entries *dir*)))
-       (unless (gethash dir entries)
-	 (error "not found: ~a" (str! dir)))
-       (push (gethash dir entries) *dirs*))
+     (unless (gethash dir *dir*)
+       (error "not found: ~a" (str! dir)))
+     (push (gethash dir *dir*) *dirs*)
      (push dir *paths*)))
   
   (format-path))
@@ -190,13 +185,13 @@
 (defclass shell ()
   ((debug? :initform nil :reader debug?)
    (paths :initform nil :reader paths)
-   (root :initform (make-dir :name ">") :reader root)
+   (root :initform (make-dir) :reader root)
    (dirs :initform nil :reader dirs)
    (results :initform (make-array 0 :fill-pointer 0) :reader results)
    (stack :initform (make-array 0 :fill-pointer 0) :reader stack)))
 
 (defun bind (dir key val)
-  (setf (gethash key (dir-entries dir)) val))
+  (setf (gethash key dir) val))
 
 (defmethod initialize-instance :after ((self shell) &key)
   (with-slots (root dirs) self
@@ -210,6 +205,9 @@
     (push root dirs)))
 
 (defparameter *shell* (make-instance 'shell))
+
+(defun dir-count (&optional (dir *dir*))
+  (hash-table-count dir))
 
 (defun start (&key (*shell* *shell*) (in *standard-input*) (out *standard-output*))
   (let* ((*out* out))

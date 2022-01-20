@@ -1,5 +1,3 @@
-* remove dir struct
-** replace with raw hash tables
 * add cmd struct
 ** name
 ** fn
