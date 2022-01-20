@@ -2,9 +2,9 @@
 #### a Common Lispy, text based shell
 
 ```
-$0 say "hello"
+0 say "hello"
 hello
-$1 q
+1 q
 ```
 
 ### intro
@@ -14,15 +14,15 @@ $1 q
 A prebuilt binary is provided for macOS, building requires SBCL:
 
 ```
-$ sbcl
+ sbcl
 > (asdf:make "lishp")
 ...
-$ ./lishp
+ ./lishp
 lishp v1,
 may the source be with you!
 
-$0 q
-saving the world...
+0 q
+saving world...
 ```
 
 ### status
@@ -38,7 +38,7 @@ True to it's inner Lisp; `lishp` implements a virtual world, contained in the ex
 `get` returns the value of the first binding found for the specified key starting from the current directory and recursing out to root.
 
 ```
-$0 get say
+0 get say
 >say:
 say()
 ```
@@ -46,8 +46,8 @@ say()
 `set` may be used to set/override the value of a binding in the current directory.
 
 ```
-$0 set x 42
-$1 get x
+0 set x 42
+1 get x
 >x:
 42
 ```
@@ -57,19 +57,19 @@ Directories work more or less as you would expect; but using `>` as separator, a
 The actual directory lives independently from its path in a specific context in the form of a regular hash table.
 
 ```
-$0 ls
+0 ls
 contents of >:
-$1 md foo bar
-$2 ls
+1 md foo bar
+2 ls
 contents of >:
 bar> (0)
 foo> (0)
-$3 cd bar
+3 cd bar
 bar>
-$4 md baz
-$5 cd <
+4 md baz
+5 cd <
 >
-$6 ls
+6 ls
 contents of >:
 bar> (1)
 foo> (0)

@@ -212,7 +212,7 @@
 (defun start (&key (*shell* *shell*) (in *standard-input*) (out *standard-output*))
   (let* ((*out* out))
     (labels ((rec-line ()
-	       (format out "$~a " (length *results*))
+	       (format out "~a " (length *results*))
 	       (force-output out)
 
 	       (let* ((line (read-line in nil)))
@@ -247,5 +247,5 @@
   (in-package lishp)
   (format t "lishp v~a,~%may the source be with you!~%~%" *version*)
   (start)
-  (format t "saving the world...~%")
+  (format t "saving world...~%")
   (save-changes (first *posix-argv*)))
