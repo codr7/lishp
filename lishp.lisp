@@ -24,7 +24,7 @@
 (define-symbol-macro *dirs* (slot-value *shell* 'dirs))
 (define-symbol-macro *dir* (first *dirs*))
 (define-symbol-macro *results* (slot-value *shell* 'results))
-(define-symbol-macro *result* (aref *results* (1- (length *results*))))
+(define-symbol-macro *stack* (slot-value *shell* 'stack))
 
 (defvar *out*)
 
@@ -85,13 +85,19 @@
 (defmethod format-entry (key val)
   key)
 
+(defun push-stack (val)
+  (push val *stack*))
+
+(defun pop-stack ()
+  (pop *stack*))
+
 (defun _get (&optional key)
-  (multiple-value-bind (v p) (get-entry (or key *result*))
+  (multiple-value-bind (v p) (get-entry (or key (pop-stack)))
     (format *out* "~a~a:~%" (format-path p) (str! key))
     v))
 
 (defun _set (key &optional val)
-  (setf (gethash key (dir-entries *dir*)) (or val *result*))
+  (setf (gethash key (dir-entries *dir*)) (or val (pop-stack)))
   nil)
 
 (defmethod eval-entry ((val function) args)
@@ -101,6 +107,7 @@
   (let* ((fn (pop in)))
     (when fn
       (let* ((out (eval-entry (get-entry fn) in)))
+	(push-stack out)
 	(vector-push-extend out *results*)
 	out))))
 
@@ -185,7 +192,8 @@
    (paths :initform nil :reader paths)
    (root :initform (make-dir :name ">") :reader root)
    (dirs :initform nil :reader dirs)
-   (results :initform (make-array 0 :fill-pointer 0) :reader results)))
+   (results :initform (make-array 0 :fill-pointer 0) :reader results)
+   (stack :initform (make-array 0 :fill-pointer 0) :reader stack)))
 
 (defun bind (dir key val)
   (setf (gethash key (dir-entries dir)) val))
