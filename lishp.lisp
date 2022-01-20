@@ -2,7 +2,7 @@
   (:use cl)
   (:import-from sb-ext *posix-argv* save-lisp-and-die)
   
-  (:export *version*
+  (:export *debug* *dir* *dirs* *path* *paths* *results* *root* *version*
 	   cd
 	   eval-line
 	   find-entry format-result
@@ -10,6 +10,7 @@
 	   ls
 	   md
 	   print-result
+	   rm rm-entry
 	   shell say start))
 
 (in-package lishp)
@@ -108,6 +109,18 @@
   (dolist (r in)
     (print-result r)))
 
+(defun say (spec &rest args)
+  (apply #'format *out* spec args)
+  (terpri *out*))
+
+(defun rm-entry (key)
+  (unless (remhash key (dir-entries *dir*))
+    (error "not found: ~a" key)))
+
+(defun rm (&rest paths)
+  (dolist (p paths)
+    (rm-entry p)))
+
 (defun ls (&rest args)
   (declare (ignore args))
   (format *out* "contents of ~a:~%" (get-path))
@@ -116,10 +129,6 @@
 	  (stable-sort (get-dir-keys)
 		       (lambda (x y)
 			 (string< (symbol-name x) (symbol-name y))))))
-
-(defun say (spec &rest args)
-  (apply #'format *out* spec args)
-  (terpri *out*))
 
 (defun md (&rest dirs)
   (dolist (d dirs)

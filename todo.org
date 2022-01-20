@@ -1,13 +1,23 @@
-* add rm
 * add asdf
 ** add executable
 *** save-lisp-and-die
+* add cmd struct
+** name
+** fn
+** add parse-cmd
+** use in eval-line
+*** add eval-cmd
+* add rec command
+** rec foo
+*** add prog struct
+*** rec cmds
 * add ln src-path dst-name
 ** add ln struct
 ** add support for > in key to find-entry
 *** drill down instead of up
 ** link found entry to dst-name in dir-entries
 *** error if exists
+* quicklisp
 * hn
 * add support for braces
 ** keep track of brace depth
