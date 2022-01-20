@@ -1,22 +1,28 @@
 (defpackage lishp
   (:use cl)
-  (:export *results* *version*
+  (:import-from sb-ext *posix-argv* save-lisp-and-die)
+  
+  (:export *version*
 	   cd
 	   eval-line
-	   format-result
-	   get-dir-keys get-path
+	   find-entry format-result
+	   get-dir-keys get-entry get-path
 	   ls
 	   md
 	   print-result
-	   say start))
+	   shell say start))
 
 (in-package lishp)
 
 (define-symbol-macro *version* 1)
 
-(defparameter *debug* nil)
-(defparameter *results* (make-array 0 :fill-pointer 0))
-(defparameter *path* nil)
+(define-symbol-macro *debug* (slot-value *shell* 'debug?))
+(define-symbol-macro *paths* (slot-value *shell* 'paths))
+(define-symbol-macro *path* (first *paths*))
+(define-symbol-macro *root* (slot-value *shell* 'root))
+(define-symbol-macro *dirs* (slot-value *shell* 'dirs))
+(define-symbol-macro *dir* (first *dirs*))
+(define-symbol-macro *results* (slot-value *shell* 'results))
 
 (defvar *out*)
 
@@ -37,17 +43,27 @@
   (name (error "missing name"))
   (entries (make-hash-table)))
 
-(defparameter *root-dir* (make-dir :name ">"))
-(defparameter *dir* (list *root-dir*))
+(defclass shell ()
+  ((debug? :initform nil :reader debug?)
+   (paths :initform nil :reader paths)
+   (root :initform (make-dir :name ">") :reader root)
+   (dirs :initform nil :reader dirs)
+   (results :initform (make-array 0 :fill-pointer 0) :reader results)))
+
+(defmethod initialize-instance :after ((self shell) &key)
+  (with-slots (root dirs) self
+    (push root dirs)))
+  
+(defparameter *shell* (make-instance 'shell))
 
 (defun get-dir-keys (&key dir)
   (let (out)
-    (dohash (k v (dir-entries (or dir (first *dir*))))
+    (dohash (k v (dir-entries (or dir *dir*)))
       (push k out))
     (nreverse out)))
 
 (defun find-entry (key)
-  (dolist (d *dir*)
+  (dolist (d *dirs*)
     (let ((v (gethash key (dir-entries d))))
       (when v
 	(return-from find-entry v))))
@@ -56,9 +72,9 @@
     (fdefinition key)))
 
 (defun get-path ()
-  (if *path*
+  (if *paths*
       (with-output-to-string (out)
-	(dolist (p (reverse *path*))
+	(dolist (p (reverse *paths*))
 	  (format out "~a>" (string-downcase (symbol-name p)))))
       ">"))
 
@@ -96,7 +112,7 @@
   (declare (ignore args))
   (format *out* "contents of ~a:~%" (get-path))
   (mapcar (lambda (k)
-	    (gethash k (dir-entries (first *dir*))))
+	    (gethash k (dir-entries *dir*)))
 	  (stable-sort (get-dir-keys)
 		       (lambda (x y)
 			 (string< (symbol-name x) (symbol-name y))))))
@@ -107,16 +123,16 @@
 
 (defun md (&rest dirs)
   (dolist (d dirs)
-    (when (gethash d (dir-entries (first *dir*)))
+    (when (gethash d (dir-entries *dir*))
       (error "duplicate entry: ~a" (string-downcase (symbol-name d))))
-    (setf (gethash d (dir-entries (first *dir*))) (make-dir :name (string-downcase (symbol-name d)))))
+    (setf (gethash d (dir-entries *dir*)) (make-dir :name (string-downcase (symbol-name d)))))
   nil)
 
 (defun cd (dir &optional (create nil))
   (let ((dp (symbol-name dir)))
     (when (char= (char dp 0) #\>)
-      (setf *path* nil)
-      (setf *dir* (list *root-dir*))
+      (setf *paths* nil)
+      (setf *dirs* (list *root*))
       (setf dp (subseq dp 1)))
     (when (zerop (length dp))
       (return-from cd ">"))
@@ -127,20 +143,20 @@
 
   (cond
     ((string= dir "<")
-     (pop *dir*)
-     (pop *path*))
+     (pop *dirs*)
+     (pop *paths*))
     (t
-     (let* ((entries (dir-entries (first *dir*))))
+     (let* ((entries (dir-entries *dir*)))
        (unless (gethash dir entries)
 	 (error "not found: ~a" (string-downcase (symbol-name dir))))
-       (push (gethash dir entries) *dir*))
-     (push dir *path*)))
+       (push (gethash dir entries) *dirs*))
+     (push dir *paths*)))
   
   (get-path))
 
-(defun start (&key (in *standard-input*) (out *standard-output*))
-  (let* ((*out* out))
-    (format out "lishp v~a,~%may the source be with you!~%~%" *version*)
+(defun start (&key (shell *shell*) (in *standard-input*) (out *standard-output*))
+  (let* ((*shell* shell)
+	 (*out* out))
     (labels ((rec-line ()
 	       (format out "$~a " (length *results*))
 	       (let* ((line (read-line in nil)))
@@ -149,7 +165,6 @@
 		    (format out "~a~%" (get-path))
 		    (rec-line))
 		   ((string= line "q")
-		    (format out "arrivederci!~%")
 		    (return-from start))
 		   (t
 		    (with-input-from-string (in line)
@@ -167,3 +182,12 @@
 		      (rec-line)))))))
       (rec-line))))
 
+(defun save-changes (path)
+  (save-lisp-and-die path :toplevel #'main :purify t))
+
+(defun main ()
+  (format t "lishp v~a,~%may the source be with you!~%~%" *version*)
+  (start)
+  (format t "saving changes...~%")
+  (save-changes (first *posix-argv*))
+  (format t "arrivederci!~%"))
