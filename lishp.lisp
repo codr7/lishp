@@ -83,7 +83,7 @@
     (values v p)))
 
 (defmethod format-entry (key val)
-  key)
+  (format nil "~a=~a" (str! key) (format-result val)))
 
 (defun push-stack (val)
   (push val *stack*))
