@@ -11,6 +11,7 @@ $1 q
 ```lishp``` aims to implement a text based shell that's programm(ed/able) in CL, while talking the bold step to carefully tweak CL's syntax in shell context to fit the purpose without burning any bridges.
 
 ### setup
+A prebuilt binary is provided for macOS, building requires SBCL:
 
 ```
 $ sbcl
