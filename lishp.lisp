@@ -5,8 +5,8 @@
   (:export *debug* *dir* *dirs* *path* *paths* *results* *root* *version*
 	   cd cp cp-entry
 	   eval-entry eval-line
-	   find-entry format-result
-	   _get get-dir-keys get-entry get-path
+	   find-entry format-path format-result
+	   _get get-dir-keys get-entry
 	   ls
 	   main md mv
 	   print-result
@@ -44,20 +44,20 @@
 (defun make-dir ()
   (make-hash-table))
 
-(defun get-dir-keys (&key dir)
-  (let* (out)
-    (dohash (k v (or dir *dir*))
-      (push k out))
-    (nreverse out)))
-
 (defmethod str! ((val string))
   val)
 
 (defmethod str! ((val symbol))
   (string-downcase (symbol-name val)))
 
+(defmethod sym! ((val symbol))
+  val)
+
+(defmethod sym! ((val string))
+  (intern (string-upcase val)))
+
 (defun find-entry (key &key (dirs *dirs*))
-  (let ((p *paths*))
+  (let* ((p *paths*))
     (dolist (d dirs)
       (let* ((v (gethash key d)))
 	(when v
@@ -71,6 +71,28 @@
 	(dolist (p (reverse path))
 	  (format out "~a>" (str! p))))
       ">"))
+
+(defun parse-path (in paths dirs)
+  (let* ((s (str! in)))
+    (cond
+      ((zerop (length s))
+       (values nil paths dirs))
+      ((char= (char s 0) #\<)
+       (parse-path (sym! (subseq s 1)) (rest paths) (rest dirs)))
+       (t
+	(let* ((i (position #\> s)))
+	  (if i
+	      (progn
+		(when (zerop i)
+		  (error "invalid path: ~a~a" (format-path paths) in))
+		(let* ((p (sym! (subseq s 0 i)))
+		       (v (gethash p (first dirs))))
+		  (unless v
+		    (error "not found: ~a~a" (format-path paths) (str! p)))
+		  (if (= i (length s))
+		      (values nil (cons p paths) (cons v dirs))
+		      (parse-path (sym! (subseq s (1+ i))) (cons p paths) (cons v dirs)))))
+	      (values in paths dirs)))))))
 
 (defun get-entry (key &key (dirs *dirs*) (paths *paths*))
   (multiple-value-bind (v p) (find-entry key :dirs dirs)
@@ -107,25 +129,29 @@
 	(vector-push-extend out *results*)
 	out))))
 
-(defmethod format-result (in)
+(defmethod format-result (val)
   (with-output-to-string (out)
-    (princ in out)))
+    (princ val out)))
 
-(defmethod format-result ((in function))
-  (multiple-value-bind (l c? n) (function-lambda-expression in)
+(defmethod format-result ((val function))
+  (multiple-value-bind (l c? n) (function-lambda-expression val)
     (declare (ignore l c?))
     (format nil "~a()" (str! n))))
 
-(defmethod format-result ((in symbol))
-  (str! in))
+(defmethod format-result ((val hash-table))
+  (format nil "hash (~a)" (dir-count val)))
 
-(defmethod print-result (in)
-  (format *out* "~a~%" (format-result in)))
+(defmethod format-result ((val symbol))
+  (str! val))
 
-(defmethod print-result ((in null)))
+(defmethod print-result (val)
+  (format *out* "~a~%" (format-result val)))
 
-(defmethod print-result ((in list))
-  (dolist (r in)
+(defmethod print-result ((val null))
+  (declare (ignore val)))
+
+(defmethod print-result ((val list))
+  (dolist (r val)
     (print-result r)))
 
 (defun say (spec &rest args)
@@ -133,19 +159,24 @@
   (terpri *out*))
 
 (defun rm-entry (key)
-  (unless (remhash key *dir*)
-    (error "not found: ~a" key)))
+    (multiple-value-bind (key ps ds) (parse-path key *paths* *dirs*)
+      (unless (remhash key (first ds))
+	(error "not found: ~a~a" (format-path ps) key))))
 
 (defun rm (&rest paths)
   (dolist (p paths)
     (rm-entry p)))
 
 (defun mv (src dst)
-  (let ((v (gethash src *dir*)))
-    (unless v
-      (error "not found: ~a" src))
-    (remhash src *dir*)
-    (setf (gethash dst *dir*) v))
+  (multiple-value-bind (src ps ds) (parse-path src *paths* *dirs*)
+    (let* ((v (gethash src (first ds))))
+      (unless v
+	(error "not found: ~a~a" (format-path ps) src))
+      (remhash src (first ds))
+
+      (multiple-value-bind (dst ps ds) (parse-path dst *paths* *dirs*)
+	(declare (ignore ps))
+	(setf (gethash (or dst src) (first ds)) v))))
   nil)
 
 (defmethod cp-entry (val)
@@ -176,6 +207,12 @@
 
 (defmethod format-entry (key (val hash-table))
   (format nil "~a> (~a)" (str! key) (dir-count val)))
+
+(defun get-dir-keys (&key dir)
+  (let* (out)
+    (dohash (k v (or dir *dir*))
+      (push k out))
+    (nreverse out)))
 
 (defun ls (&rest args)
   (declare (ignore args))

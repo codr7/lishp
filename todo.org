@@ -1,3 +1,4 @@
+* add parse-path to cp/cd/md/rm
 * add cmd struct
 ** target
 ** args
