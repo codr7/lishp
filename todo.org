@@ -1,7 +1,8 @@
-* print stack on enter
+* add cp/cp-entry
+** error if not found
 * add cmd struct
-** name
-** fn
+** target
+** args
 ** add parse-cmd
 ** use in eval-line
 *** add eval-cmd
@@ -21,17 +22,12 @@
 ** keep track of brace depth
 *** keep reading lines and accing forms while > 0
 ** eval each line and keep return value of last
-* add regexp support
-** add ls support
-** add cd support
-** add rm support
 * add << support
 ** pop n paths
 * add >> support
 ** pipe command input/output
 ** catch all returned values & apply
-* add slurp fn to read lisp/lsh code into current package
-** assume lishp syntax unless .lisp extension
+* add slurp fn to read file
 * add support for vectors
 ** [foo bar baz]
 * add support for hash tables

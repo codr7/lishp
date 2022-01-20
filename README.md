@@ -52,6 +52,18 @@ say()
 42
 ```
 
+Bindings may be moved using `mv`.
+
+```
+0 set x 42
+1 mv x y
+2 get y
+>y:
+42
+3 get x
+not found: >x
+```
+
 ### directories
 Directories work more or less as you would expect; but using `>` as separator, and it's opposite instead of `..`.
 The actual directory lives independently from its path in a specific context in the form of a regular hash table.

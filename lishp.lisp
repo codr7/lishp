@@ -8,7 +8,7 @@
 	   find-entry format-result
 	   _get get-dir-keys get-entry get-path
 	   ls
-	   main md
+	   main md mv
 	   print-result
 	   rm rm-entry
 	   _set shell say start))
@@ -111,6 +111,11 @@
   (with-output-to-string (out)
     (princ in out)))
 
+(defmethod format-result ((in function))
+  (multiple-value-bind (l c? n) (function-lambda-expression in)
+    (declare (ignore l c?))
+    (format nil "~a()" (str! n))))
+
 (defmethod format-result ((in symbol))
   (str! in))
 
@@ -135,7 +140,15 @@
   (dolist (p paths)
     (rm-entry p)))
 
-(defmethod format-entry (key (val function))
+(defun mv (src dst)
+  (let ((v (gethash src *dir*)))
+    (unless v
+      (error "not found: ~a" src))
+    (remhash src *dir*)
+    (setf (gethash dst *dir*) v))
+  nil)
+
+(defmethod format-entry (key (val function))    
   (format nil "~a()" (str! key)))
 
 (defmethod format-entry (key (val hash-table))
@@ -199,6 +212,7 @@
     (bind root 'get #'_get)
     (bind root 'ls #'ls)
     (bind root 'md #'md)
+    (bind root 'mv #'mv)
     (bind root 'rm #'rm)
     (bind root 'say #'say)
     (bind root 'set #'_set)
