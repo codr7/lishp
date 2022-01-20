@@ -2,17 +2,27 @@
 #### a Common Lispy, text based shell
 
 ```
-lishp v1,
-may the source be with you!
-
 $0 say "hello"
 hello
 $1 q
-arrivederci!
+saving changes...
 ```
 
 ### intro
 ```lishp``` aims to implement a text based shell that's programm(ed/able) in CL, while talking the bold step to carefully tweak CL's syntax in shell context to fit the purpose without burning any bridges.
+
+### setup
+
+```
+$ sbcl
+> (asdf:make "lishp")
+...
+$ ./lishp
+lishp v1,
+may the source be with you!
+
+$0
+```
 
 ### status
 All functionality described in this document is intended to work reliably; but `lishp` is still very raw, with missing features and weird edge cases all over the place.

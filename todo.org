@@ -1,13 +1,14 @@
-* add asdf
-** add executable
-*** save-lisp-and-die
+* add set cmd
+** set foo 42
+** bind in root
+** use prev result if val missing
 * add cmd struct
 ** name
 ** fn
 ** add parse-cmd
 ** use in eval-line
 *** add eval-cmd
-* add rec command
+* add rec command (args)
 ** rec foo
 *** add prog struct
 *** rec cmds
