@@ -54,7 +54,7 @@ $1 get x
 
 ### directories
 Directories work more or less as you would expect; but using `>` as separator, and it's opposite instead of `..`.
-The actual directory lives independently from its path in a specific context, it's basically a name and a hash table.
+The actual directory lives independently from its path in a specific context in the form of a regular hash table.
 
 ```
 $0 ls

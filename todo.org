@@ -1,3 +1,4 @@
+* print stack on enter
 * add cmd struct
 ** name
 ** fn
