@@ -4,7 +4,7 @@
   
   (:export *debug* *dir* *dirs* *path* *paths* *results* *root* *version*
 	   cd
-	   eval-line
+	   eval-entry eval-line
 	   find-entry format-result
 	   get-dir-keys get-entry get-path
 	   ls
@@ -77,13 +77,13 @@
   (or (find-entry key :dirs dirs)
       (error "not found: ~a~a" (get-path) (str! key))))
 
-(defmethod call-entry ((val fn) args)
+(defmethod eval-entry ((val fn) args)
   (apply (fn-body val) args))
 
 (defmethod eval-line (in)
   (let* ((fn (pop in)))
     (when fn
-      (let* ((out (call-entry (get-entry fn) in)))
+      (let* ((out (eval-entry (get-entry fn) in)))
 	(vector-push-extend out *results*)
 	out))))
 
@@ -221,5 +221,5 @@
   (in-package lishp)
   (format t "lishp v~a,~%may the source be with you!~%~%" *version*)
   (start)
-  (format t "saving changes...~%")
+  (format t "saving the world...~%")
   (save-changes (first *posix-argv*)))

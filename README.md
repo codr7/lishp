@@ -5,7 +5,6 @@
 $0 say "hello"
 hello
 $1 q
-saving changes...
 ```
 
 ### intro
@@ -21,17 +20,18 @@ $ ./lishp
 lishp v1,
 may the source be with you!
 
-$0
+$0 q
+saving the world...
 ```
 
 ### status
 All functionality described in this document is intended to work reliably; but `lishp` is still very raw, with missing features and weird edge cases all over the place.
 
 ### vision
-What you see at this point is a tiny step in the direction where I'm aiming with this, I'm still tracing the idea to it's logical conclusions, this is very much an explorative adventure with no end in neither mind nor sight.
+What you see is a tiny step in the direction where I'm aiming, this is very much an explorative adventure with no end in neither mind nor sight.
 
 ### virtual reality
-True to it's inner Lisp; `lishp` implements a virtual world, a namespace clearly separated from the rest of your computer and all it's pesky little details. It's not an isolated world, by any means; but it doesn't support listing files in its host environment out of the box, for example; not that it couldn't be trivially extended by the user to do that, it just tries to solve the more general problem in a more programmable style.
+True to it's inner Lisp; `lishp` implements a virtual world, contained in the executable image; a namespace clearly separated from the rest of your computer and all it's pesky little details. It's not an isolated world, by any means; but it doesn't support listing files in its host environment out of the box, for example; not that it couldn't be trivially extended by the user to do that, it just tries to solve the more general problem in a more programmable style.
 
 ### directories
 Directories work more or less as you would expect; but using `>` as separator, and it's opposite instead of `..`.

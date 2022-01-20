@@ -1,7 +1,9 @@
-* add set cmd
+* add get/set cmds
+** use get-entry
 ** set foo 42
 ** bind in root
 ** use prev result if val missing
+** add bindings to readme
 * add cmd struct
 ** name
 ** fn
