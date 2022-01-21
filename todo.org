@@ -1,4 +1,5 @@
-* add parse-path to cp/cd/md/rm
+* add ln cmd
+** like cp without cp-entry
 * add cmd struct
 ** target
 ** args

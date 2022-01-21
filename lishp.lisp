@@ -17,7 +17,7 @@
 
 (define-symbol-macro *version* 1)
 
-(define-symbol-macro *debug* (slot-value *shell* 'debug?))
+(define-symbol-macro *debug?* (slot-value *shell* 'debug?))
 (define-symbol-macro *paths* (slot-value *shell* 'paths))
 (define-symbol-macro *path* (first *paths*))
 (define-symbol-macro *root* (slot-value *shell* 'root))
@@ -72,27 +72,31 @@
 	  (format out "~a>" (str! p))))
       ">"))
 
-(defun parse-path (in paths dirs)
+(defun parse-path (in paths dirs &key md?)
   (let* ((s (str! in)))
     (cond
       ((zerop (length s))
        (values nil paths dirs))
       ((char= (char s 0) #\<)
-       (parse-path (sym! (subseq s 1)) (rest paths) (rest dirs)))
-       (t
-	(let* ((i (position #\> s)))
-	  (if i
-	      (progn
-		(when (zerop i)
-		  (error "invalid path: ~a~a" (format-path paths) in))
-		(let* ((p (sym! (subseq s 0 i)))
-		       (v (gethash p (first dirs))))
-		  (unless v
-		    (error "not found: ~a~a" (format-path paths) (str! p)))
-		  (if (= i (length s))
-		      (values nil (cons p paths) (cons v dirs))
-		      (parse-path (sym! (subseq s (1+ i))) (cons p paths) (cons v dirs)))))
-	      (values in paths dirs)))))))
+       (parse-path (sym! (subseq s 1)) (rest paths) (rest dirs) :md? md?))
+      (t
+       (let* ((i (position #\> s)))
+	 (if i
+	     (progn
+	       (when (zerop i)
+		 (return-from parse-path (parse-path (sym! (subseq s 1)) nil (list *root*))))
+	       (let* ((p (sym! (subseq s 0 i)))
+		      (v (gethash p (first dirs))))
+		 (unless v
+		   (if md?
+		       (progn
+			 (setf v (make-dir))
+			 (setf(gethash p (first dirs)) v))
+		       (error "not found: ~a~a" (format-path paths) (str! p))))
+		 (if (= i (length s))
+		     (values nil (cons p paths) (cons v dirs))
+		     (parse-path (sym! (subseq s (1+ i))) (cons p paths) (cons v dirs) :md? md?))))
+	     (values in paths dirs)))))))
 
 (defun get-entry (key &key (dirs *dirs*) (paths *paths*))
   (multiple-value-bind (v p) (find-entry key :dirs dirs)
@@ -109,8 +113,8 @@
 (defun pop-stack ()
   (pop *stack*))
 
-(defun _get (&optional key)
-  (multiple-value-bind (v p) (get-entry (or key (pop-stack)))
+(defun _get (key)
+  (multiple-value-bind (v p) (get-entry key)
     (format *out* "~a~a:~%" (format-path p) (str! key))
     v))
 
@@ -159,9 +163,9 @@
   (terpri *out*))
 
 (defun rm-entry (key)
-    (multiple-value-bind (key ps ds) (parse-path key *paths* *dirs*)
-      (unless (remhash key (first ds))
-	(error "not found: ~a~a" (format-path ps) key))))
+  (multiple-value-bind (key ps ds) (parse-path key *paths* *dirs*)
+    (unless (remhash key (first ds))
+      (error "not found: ~a~a" (format-path ps) key))))
 
 (defun rm (&rest paths)
   (dolist (p paths)
@@ -196,10 +200,13 @@
   (copy-seq val))
 
 (defun cp (src dst)
-  (let ((v (gethash src *dir*)))
-    (unless v
-      (error "not found: ~a" src))
-    (setf (gethash dst *dir*) (cp-entry v)))
+  (multiple-value-bind (src ps ds) (parse-path src *paths* *dirs*)
+    (let ((v (gethash src (first ds))))
+      (unless v
+	(error "not found: ~a~a" (format-path ps) src))
+      (multiple-value-bind (dst ps ds) (parse-path dst *paths* *dirs*)
+	(declare (ignore ps))
+	(setf (gethash dst (first ds)) (cp-entry v)))))
   nil)
 
 (defmethod format-entry (key (val function))    
@@ -223,35 +230,29 @@
 		       (lambda (x y)
 			 (string< (symbol-name x) (symbol-name y))))))
 
-(defun md (&rest dirs)
-  (dolist (d dirs)
-    (when (gethash d *dir*)
-      (error "duplicate entry: ~a" (str! d)))
-    (setf (gethash d *dir*) (make-dir)))
+(defun md (&rest paths)
+  (dolist (p paths)
+    (multiple-value-bind (p ps ds) (parse-path p *paths* *dirs* :md? t)
+      (when p
+	(when (gethash p (first ds))
+	  (error "duplicate entry: ~a~a" ps (str! p)))
+	(setf (gethash p (first ds)) (make-dir)))))
   nil)
 
-(defun cd (dir &optional (create nil))
-  (let* ((dp (symbol-name dir)))
-    (when (char= (char dp 0) #\>)
-      (setf *paths* nil)
-      (setf *dirs* (list *root*))
-      (setf dp (subseq dp 1)))
-    (when (zerop (length dp))
-      (return-from cd ">"))
-    (setf dir (intern dp)))
-  
-  (when create
-    (md dir))
-
-  (cond
-    ((string= dir "<")
-     (pop *dirs*)
-     (pop *paths*))
-    (t
-     (unless (gethash dir *dir*)
-       (error "not found: ~a" (str! dir)))
-     (push (gethash dir *dir*) *dirs*)
-     (push dir *paths*)))
+(defun cd (path &optional (md? nil))
+  (multiple-value-bind (p ps ds) (parse-path path *paths* *dirs* :md? md?)
+    (setf *paths* ps *dirs* ds)
+    
+    (when p
+      (push p *paths*)
+      (let ((d (gethash p *dir*)))
+	(unless d
+	  (if md?
+	      (progn
+		(setf d (make-dir))
+		(setf (gethash p *dir*) d))
+	      (error "not found: ~a~a" ps p)))
+	(push d *dirs*))))
   
   (format-path))
 
@@ -307,7 +308,7 @@
 			(handler-case
 			    (print-result (eval-line (rec-form nil)))
 			  (error (e)
-			    (when *debug*
+			    (when *debug?*
 			      (error e))
 			    (format t "~a~%" e))))
 		      (rec-line)))))))

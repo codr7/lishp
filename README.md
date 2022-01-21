@@ -84,19 +84,22 @@ The actual directory lives independently from its path in a specific context in 
 ```
 0 ls
 contents of >:
-1 md foo bar
+1 md foo>bar baz
 2 ls
 contents of >:
+baz> (0)
+foo> (1)
+3 cd foo
+foo>
+4 ls
+contents of foo>:
 bar> (0)
-foo> (0)
-3 cd bar
-bar>
-4 md baz
 5 cd <
 >
-6 ls
+6 rm foo>bar
+7 ls
 contents of >:
-bar> (1)
+baz> (0)
 foo> (0)
 ```
 
