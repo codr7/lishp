@@ -8,6 +8,6 @@
   :build-operation "asdf:program-op"
   :build-pathname "lishp"
   :entry-point "lishp:main"
-  :depends-on ()
+  :depends-on ("local-time")
   :serial t
   :components ((:file "lishp")))

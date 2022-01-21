@@ -103,5 +103,32 @@ baz> (0)
 foo> (0)
 ```
 
+### time
+`now`/`today` may be used to obtain the current time/date.
+`time-format'/'time-sonze' may be bound to change i/o format.
+
+```
+0 get time-format
+>time-format:
+year
+-
+month
+2
+-
+day
+2
+ 
+hour
+2
+:
+min
+2a
+1 get time-zone
+>time-zone:
+#<TIMEZONE UTC>
+2 now
+2022-01-21 08:47
+```
+
 ### support
 Should you wish to support this effort and allow me to spend more of my time and energy on evolving `lishp`, feel free to [help](https://liberapay.com/andreas7/donate) make that economically feasible. Rest assured that any contributions are most appreciated, as I much prefer writing code that means something to me on my own terms (who doesn't?).

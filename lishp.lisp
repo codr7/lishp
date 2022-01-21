@@ -1,7 +1,7 @@
 (defpackage lishp
   (:use cl)
   (:import-from sb-ext *posix-argv* save-lisp-and-die)
-  
+  (:import-from local-time +utc-zone+ format-timestring now timestamp today)
   (:export *debug* *dir* *dirs* *path* *paths* *results* *root* *version*
 	   cd cp cp-entry
 	   eval-entry eval-line
@@ -142,21 +142,28 @@
     (declare (ignore l c?))
     (format nil "~a()" (str! n))))
 
-(defmethod format-result ((val hash-table))
-  (format nil "hash (~a)" (dir-count val)))
-
 (defmethod format-result ((val symbol))
   (str! val))
+
+(defmethod format-result ((val timestamp))
+  (let ((f (get-entry 'time-format))
+	(z (get-entry 'time-zone)))
+    (format-timestring nil val :format f :timezone z)))
 
 (defmethod print-result (val)
   (format *out* "~a~%" (format-result val)))
 
-(defmethod print-result ((val null))
-  (declare (ignore val)))
+(defmethod print-result ((val hash-table))
+  (let ((ks (get-dir-keys :dir val)))
+    (dolist (k ks)
+      (format *out* "~a~%" (format-entry k (gethash k val))))))
 
 (defmethod print-result ((val list))
   (dolist (r val)
     (print-result r)))
+
+(defmethod print-result ((val null))
+  (declare (ignore val)))
 
 (defun say (spec &rest args)
   (apply #'format *out* spec args)
@@ -219,16 +226,16 @@
   (let* (out)
     (dohash (k v (or dir *dir*))
       (push k out))
-    (nreverse out)))
+    (stable-sort (nreverse out)
+		 (lambda (x y)
+		   (string< (symbol-name x) (symbol-name y))))))
 
 (defun ls (&rest args)
   (declare (ignore args))
   (format *out* "contents of ~a:~%" (format-path))
   (mapcar (lambda (k)
 	    (format-entry k (gethash k *dir*)))
-	  (stable-sort (get-dir-keys)
-		       (lambda (x y)
-			 (string< (symbol-name x) (symbol-name y))))))
+	  (get-dir-keys)))
 
 (defun md (&rest paths)
   (dolist (p paths)
@@ -275,9 +282,13 @@
     (bind root 'ls #'ls)
     (bind root 'md #'md)
     (bind root 'mv #'mv)
+    (bind root 'now #'now)
     (bind root 'rm #'rm)
     (bind root 'say #'say)
     (bind root 'set #'_set)
+    (bind root 'today #'today)
+    (bind root 'time-format '(:year #\- (:month 2) #\- (:day 2) #\space (:hour 2) #\: (:min 2)))
+    (bind root 'time-zone +utc-zone+)
     (push root dirs)))
 
 (defparameter *shell* (make-instance 'shell))
